@@ -1,0 +1,19 @@
+@import url('https://js.arcgis.com/4.9/esri/css/main.css');
+#mapDiv {
+    padding: 0;
+    margin: 0;
+    height: 1000px;
+    width: 100%;
+}
+
+#infoDiv {
+    position: absolute;
+    top: 18px;
+    left: 24px;
+    z-index: 1000;
+}
+
+div.esri-ui-inner-container.esri-ui-corner-container {
+    //.esri-ui-inner-container {
+    top: 50px !important;
+}
