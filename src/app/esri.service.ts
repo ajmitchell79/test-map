@@ -108,12 +108,18 @@ export class EsriService {
         });
 
       //  featureLayer.setDefinitionExpression("PROD_GAS='Yes'");
+      debugger;
         this._map.add(featureLayer); 
   }
 
   //******************************************************** */
   //loop through all the state layer graphics, intersect with points layer, sum the TIV
   //********************************************************** */
+
+  public intersects()
+  {
+
+  }
 
   public addCityData(clientName: string)
   {

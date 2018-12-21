@@ -47,7 +47,7 @@ export class AppComponent implements OnInit {
   switchGraphics(event: IEvent)
   {
    // this.twoDimension ? this.esriService.addStormGraphic2D(event) :  this.esriService.addStormGraphic3D(event);
-    //this.esriService.addFeatureLayer();
+    this.esriService.addFeatureLayer();
 
     this.esriService.addCityData(this.selectedClient);
   }
