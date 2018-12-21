@@ -1,7 +1,14 @@
 <div id="infoDiv" *ngIf="!IE">
     <input class="esri-component esri-widget--button esri-widget esri-interactive" (click)="switchDimension()" type="button" value="{{dimensionLabel}}">
 </div>
-<div style="height:100%">
-    <div id="mapDiv" #mapViewNode>
-    </div>
+
+<div id="clientDiv">
+    <select id="clients_dd" (change)="onChange($event)" [(value)]="selectedClient">
+    <option *ngFor="let client of clients" [value]="client">
+        {{ client }}
+    </option>
+</select>
+</div>
+
+<div id="mapDiv" #mapViewNode>
 </div>

@@ -2,6 +2,8 @@ import { Component, OnInit,ViewEncapsulation, ViewChild, ElementRef } from '@ang
 import {IEvent} from './iEvent';
 import {EsriService} from './esri.service';
 import { Subscription } from 'rxjs';
+import { DECLARATION_VIEW } from '@angular/core/src/render3/interfaces/view';
+
 
 @Component({
   selector: 'app-root',
@@ -18,6 +20,10 @@ export class AppComponent implements OnInit {
   private dimensionLabel: string = "2D";
   private stormEvent : IEvent;
   private IE: boolean;
+
+  selectedClient: string = "client_1";
+
+  public clients : string[] = ["client_1", "client_2", "client_3"];
 
   constructor(private esriService : EsriService) {
    //debugger;
@@ -40,9 +46,10 @@ export class AppComponent implements OnInit {
 
   switchGraphics(event: IEvent)
   {
-    this.twoDimension ? this.esriService.addStormGraphic2D(event) :  this.esriService.addStormGraphic3D(event);
+   // this.twoDimension ? this.esriService.addStormGraphic2D(event) :  this.esriService.addStormGraphic3D(event);
+    //this.esriService.addFeatureLayer();
 
-    this.esriService.addFeatureLayer();
+    this.esriService.addCityData(this.selectedClient);
   }
 
   switchDimension()
@@ -52,6 +59,13 @@ export class AppComponent implements OnInit {
 
     this.twoDimension = !this.twoDimension;
   }
+
+   onChange($event)
+   {
+     this.selectedClient = $event.target.value;
+     //debugger;
+     this.esriService.addCityData(this.selectedClient);
+   }
 
   private checkIE(): boolean
   {

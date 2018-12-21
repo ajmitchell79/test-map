@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import {IEvent} from './iEvent';
+import {citydata} from './data/city-data';
 
 import { loadModules } from 'esri-loader';
 import esri = __esri;
@@ -33,6 +34,8 @@ export class EsriService {
 
   _mesh: any;
 
+  cityLayer: esri.GraphicsLayer;
+
   constructor() { 
     //debugger;
   }
@@ -50,8 +53,6 @@ export class EsriService {
       "esri/layers/FeatureLayer"
     ])
       .then(([EsriMap, EsriMapView,EsriGraphicsLayer, EsriGraphic, EsriSimpleLineSymbol, EsriFeatureLayer]) => {
-
-       
 
         this._graphic = EsriGraphic;
         this._graphicsLayer = EsriGraphicsLayer;
@@ -78,8 +79,16 @@ export class EsriService {
         this._mapView = new EsriMapView(mapViewProperties);
 
         this._mapView.when(() => {
+
+          this.cityLayer = new this._graphicsLayer();
+          this._map.add(this.cityLayer);
+
           // All the resources in the MapView and the map have loaded. Now execute additional processes
           this.mapInitialisedSource.next();
+
+        //city locations
+          
+
 
         }, err => {
           console.error(err);
@@ -100,6 +109,50 @@ export class EsriService {
 
       //  featureLayer.setDefinitionExpression("PROD_GAS='Yes'");
         this._map.add(featureLayer); 
+  }
+
+  //******************************************************** */
+  //loop through all the state layer graphics, intersect with points layer, sum the TIV
+  //********************************************************** */
+
+  public addCityData(clientName: string)
+  {
+    let that = this;
+
+  //  this.cityLayer = new this._graphicsLayer();
+    this.cityLayer.graphics.removeAll();
+
+    //citydata.client_1.forEach(city=>
+    citydata[clientName].forEach(city=>
+      {
+        var point = {
+          type: "point",  // autocasts as new Point()
+          longitude: city.longitude,
+          latitude: city.latitude
+        };
+        
+        // Create a symbol for drawing the point
+        var markerSymbol = {
+          type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
+          color: '#ff771d'
+        };
+        
+        // Create a graphic and add the geometry and symbol to it
+        var pointGraphic = new this._graphic({
+          geometry: point,
+          symbol: markerSymbol
+        });
+    
+        this.cityLayer.graphics.add(pointGraphic);
+      });
+
+   // this._map.add(this.cityLayer);
+
+    //set view to exent of graphics layer
+    this._mapView.goTo( this.cityLayer.graphics).then(function () {
+    
+      //that._mapView.zoom = that._mapView.zoom - 1;
+    });
   }
 
   public addStormGraphic2D(event: IEvent)
@@ -276,7 +329,6 @@ export class EsriService {
  {
    let layer = new this._graphicsLayer();
    this._map.add(layer);
-
 
    //willis 
    var willisPolygon1 = new this._polygon(

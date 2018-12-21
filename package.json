@@ -22,7 +22,7 @@
     "@angular/router": "~7.0.0",
     "@types/arcgis-js-api": "^4.9.0",
     "core-js": "^2.5.4",
-    "esri-loader": "^2.5.0",
+    "esri-loader": "^2.6.0",
     "rxjs": "~6.3.3",
     "zone.js": "~0.8.26"
   },
