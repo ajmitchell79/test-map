@@ -1,0 +1,116 @@
+@import './variables';
+@import './mixins';
+@import "../../node_modules/bootstrap/scss/bootstrap";
+@import "functions";
+@import "variables";
+@import "mixins";
+@import "root";
+@import "reboot";
+@import "type";
+@import "images";
+@import "code";
+@import "grid";
+@import "tables";
+@import "forms";
+@import "buttons";
+@import "transitions";
+@import "dropdown";
+@import "button-group";
+@import "input-group";
+@import "custom-forms";
+@import "nav";
+@import "navbar";
+@import "card";
+@import "breadcrumb";
+@import "pagination";
+@import "badge";
+@import "jumbotron";
+@import "alert";
+@import "media";
+@import "list-group";
+@import "close";
+@import "modal";
+@import "tooltip";
+@import "popover";
+@import "carousel";
+@import "utilities";
+@import "print";
+@import url('https://js.arcgis.com/4.10/esri/css/main.css');
+#mapDiv {
+    // height: 1000px;
+    // height: 200px;
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
+
+#infoDiv {
+    position: absolute;
+    top: 12px;
+    left: 15px;
+    z-index: 1000;
+}
+
+#clientDiv {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    z-index: 1000;
+    padding: 5px;
+}
+
+div.esri-ui-inner-container.esri-ui-corner-container {
+    //.esri-ui-inner-container {
+    top: 50px !important;
+}
+
+.esri-widget--button,
+.esri-widget--button:hover {
+    background-color: black;
+    font-weight: bold;
+    color: #ff771d;
+    border: solid 1px #ff771d;
+}
+
+.esri-navigation-toggle__button--pan,
+.esri-navigation-toggle__button--pan:hover {
+    // background-color: red;
+    color: #ff771d;
+}
+
+.esri-navigation-toggle:hover .esri-navigation-toggle__button {
+    color: #ff771d;
+    font-weight: bold;
+}
+
+.esri-widget {
+    color: #ff771d;
+}
+
+.esri-widget--button::before,
+.esri-widget--button::after {
+    color: #ff771d;
+}
+
+// .esri-navigation-toggle__button::after {
+//     color: $lancsOrange;
+//     font-weight: bold;
+// }
+.esri-navigation-toggle__button.esri-widget--button.esri-navigation-toggle__button--pan,
+.esri-navigation-toggle__button.esri-widget--button.esri-navigation-toggle__button--rotate {
+    color: #ff771d;
+}
+
+*:focus {
+    outline: none;
+}
+
+input,
+select,
+select>option {
+    padding: 7px;
+    background-color: black;
+    color: #ff771d;
+    border: solid 1px #ff771d;
+}

@@ -1,4 +1,20 @@
-<div id="infoDiv" *ngIf="!IE">
+<div class="container-fluid" style="height:100%;">
+    <!-- height:95% -->
+    <div class="row">
+        <div class="col">
+            <app-nav></app-nav>
+        </div>
+    </div>
+    <div class="row mt-5" style="height:95%;">
+        <div class="col p-0">
+            <router-outlet></router-outlet>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- <div id="infoDiv" *ngIf="!IE">
     <input class="esri-component esri-widget--button esri-widget esri-interactive" (click)="switchDimension()" type="button" value="{{dimensionLabel}}">
 </div>
 
@@ -8,7 +24,10 @@
         {{ client }}
     </option>
 </select>
+    <br>
+    <br>
+    <input type="button" value="Intersect" (click)="intersectClick()">
 </div>
 
 <div id="mapDiv" #mapViewNode>
-</div>
+</div> -->

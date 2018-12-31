@@ -1,0 +1,23 @@
+<div class="container-fluid" style="height:100%;">
+    <div class="row" style="height:100%;">
+        <div class="col p-0" style="height:100%;">
+            <!-- <div id="infoDiv" *ngIf="!IE">
+                <input class="esri-component esri-widget--button esri-widget esri-interactive" (click)="switchDimension()" type="button" value="{{dimensionLabel}}">
+            </div> -->
+
+            <div id="clientDiv">
+                <select id="clients_dd" (change)="onChange($event)" [(value)]="selectedClient">
+                <option *ngFor="let client of clients" [value]="client">
+                    {{ client }}
+                </option>
+            </select>
+                <br>
+                <br>
+                <input type="button" value="Intersect" (click)="intersectClick()">
+            </div>
+
+            <div id="mapDiv" #mapViewNode>
+            </div>
+        </div>
+    </div>
+</div>

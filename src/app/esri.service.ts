@@ -35,6 +35,7 @@ export class EsriService {
   _mesh: any;
 
   cityLayer: esri.GraphicsLayer;
+  stateLayer: esri.FeatureLayer;
 
   constructor() { 
     //debugger;
@@ -50,7 +51,8 @@ export class EsriService {
       'esri/layers/GraphicsLayer',
       'esri/Graphic',
       "esri/symbols/SimpleLineSymbol",
-      "esri/layers/FeatureLayer"
+      "esri/layers/FeatureLayer",
+      "esri/geometry/geometryEngine"
     ])
       .then(([EsriMap, EsriMapView,EsriGraphicsLayer, EsriGraphic, EsriSimpleLineSymbol, EsriFeatureLayer]) => {
 
@@ -78,10 +80,12 @@ export class EsriService {
 
         this._mapView = new EsriMapView(mapViewProperties);
 
+        this._mapView.ui.remove(["attribution"]);
+
         this._mapView.when(() => {
 
-          this.cityLayer = new this._graphicsLayer();
-          this._map.add(this.cityLayer);
+          // this.cityLayer = new this._graphicsLayer()
+          // this._map.add(this.cityLayer);
 
           // All the resources in the MapView and the map have loaded. Now execute additional processes
           this.mapInitialisedSource.next();
@@ -101,15 +105,18 @@ export class EsriService {
   
   public addFeatureLayer()
   {
-    var featureLayer = new this._featureLayer("https://services.arcgis.com/V6ZHFr6zdgNZuVG0/ArcGIS/rest/services/StateTerritoryBoundaries/FeatureServer/0",{
+    if (this.stateLayer != null) return;
+
+    this.stateLayer = new this._featureLayer("https://services.arcgis.com/V6ZHFr6zdgNZuVG0/ArcGIS/rest/services/StateTerritoryBoundaries/FeatureServer/0",{
           mode: this._featureLayer.MODE_ONDEMAND,
           outFields: ["*"],
+          definitionExpression: "TERR_TYPE = 'State' AND VERSION = 1",
           opacity: 0.5
         });
 
       //  featureLayer.setDefinitionExpression("PROD_GAS='Yes'");
-      debugger;
-        this._map.add(featureLayer); 
+      //debugger;
+        this._map.add(this.stateLayer); 
   }
 
   //******************************************************** */
@@ -118,12 +125,32 @@ export class EsriService {
 
   public intersects()
   {
+      //get reference to states layer
+      //cycle through each state, intersect with current cities layer
+
+              let query =  this.stateLayer.createQuery();
+             // query.where = "TERR_TYPE = 'State'";
+              let result = this.stateLayer.queryFeatures(query).then(function(response)
+              {
+                debugger;
+                  let x = response;
+                  //response.features[0].attributes
+
+
+                  
+              })
 
   }
 
   public addCityData(clientName: string)
   {
     let that = this;
+
+    if (this.cityLayer == null)
+    {
+        this.cityLayer = new this._graphicsLayer()
+        this._map.add(this.cityLayer);
+    }
 
   //  this.cityLayer = new this._graphicsLayer();
     this.cityLayer.graphics.removeAll();
