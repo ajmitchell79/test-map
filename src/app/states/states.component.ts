@@ -18,6 +18,9 @@ export class StatesComponent implements OnInit {
   selectedClient: string = "client_1";
   public clients : string[] = ["client_1", "client_2", "client_3"];
 
+  private featureCountRef: Subscription = null;
+  featureCount: number;
+
   constructor(private esriService : EsriService) { }
 
   ngOnInit() {
@@ -27,6 +30,12 @@ export class StatesComponent implements OnInit {
     this.esriService.mapInitialised$.subscribe(()=>{
       this.loadGraphics();
     });
+
+    this.esriService.featureCount$.subscribe((count: number)=>{
+      this.featureCount = count;
+    });
+
+
   }
 
   loadGraphics()

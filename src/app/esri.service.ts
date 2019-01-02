@@ -14,6 +14,9 @@ export class EsriService {
   private mapInitialisedSource = new Subject<void>();
   public mapInitialised$ = this.mapInitialisedSource.asObservable();
 
+  private featureCountSource = new Subject<number>();
+  public featureCount$ = this.featureCountSource.asObservable();
+
   _sceneView: esri.SceneView; 
   _map: esri.Map;
   _mapView: esri.MapView;
@@ -34,8 +37,10 @@ export class EsriService {
 
   _mesh: any;
 
-  cityLayer: esri.GraphicsLayer;
+  //cityLayer: esri.GraphicsLayer;
+  cityLayer: any;
   stateLayer: esri.FeatureLayer;
+  _geometryEngine: esri.geometryEngine;
 
   constructor() { 
     //debugger;
@@ -54,13 +59,15 @@ export class EsriService {
       "esri/layers/FeatureLayer",
       "esri/geometry/geometryEngine"
     ])
-      .then(([EsriMap, EsriMapView,EsriGraphicsLayer, EsriGraphic, EsriSimpleLineSymbol, EsriFeatureLayer]) => {
+      .then(([EsriMap, EsriMapView,EsriGraphicsLayer, EsriGraphic, EsriSimpleLineSymbol, EsriFeatureLayer, geometryEngine]) => {
 
         this._graphic = EsriGraphic;
         this._graphicsLayer = EsriGraphicsLayer;
         this._featureLayer = EsriFeatureLayer;
         this. _simpleLineSymbol = EsriSimpleLineSymbol;
         this._mapView = EsriMapView;
+        //this._geometryEngine = new geometryEngine();
+        this._geometryEngine = geometryEngine;
 
         // Set type for Map constructor properties
         const mapProperties: esri.MapProperties = {
@@ -84,15 +91,8 @@ export class EsriService {
 
         this._mapView.when(() => {
 
-          // this.cityLayer = new this._graphicsLayer()
-          // this._map.add(this.cityLayer);
-
           // All the resources in the MapView and the map have loaded. Now execute additional processes
           this.mapInitialisedSource.next();
-
-        //city locations
-          
-
 
         }, err => {
           console.error(err);
@@ -114,8 +114,6 @@ export class EsriService {
           opacity: 0.5
         });
 
-      //  featureLayer.setDefinitionExpression("PROD_GAS='Yes'");
-      //debugger;
         this._map.add(this.stateLayer); 
   }
 
@@ -125,24 +123,127 @@ export class EsriService {
 
   public intersects()
   {
-      //get reference to states layer
-      //cycle through each state, intersect with current cities layer
 
+    let that = this;
+     
               let query =  this.stateLayer.createQuery();
              // query.where = "TERR_TYPE = 'State'";
               let result = this.stateLayer.queryFeatures(query).then(function(response)
               {
-                debugger;
+              
                   let x = response;
                   //response.features[0].attributes
 
+                  //*********************************************************** */
+                  // - loop through each point
+                  // - loop through all states until it intersects, THEN EXIT LOOP as youve found the intersetct
+                  //******************************************************************* */
 
+                  that.cityLayer.graphics.items.forEach(graphic=>
+                    {
+                      
+                      response.features.forEach(feature=>
+                        {
+                          console.log('intersecting ' + feature.attributes["NAME"]);
+                          //if found, break loop
+
+                          if(that._geometryEngine.intersects(feature.geometry, graphic.geometry))
+                          {
+                            console.log('found');
+                          }
+
+                        });
+
+                    });
+
+                //works
+                // response.features.forEach(feature=>
+                //   {
+                //     debugger;
+                    
+                //     try{
+                //       var result = that._geometryEngine.intersects(feature.geometry, that.cityLayer.graphics.items[0].geometry);
+                //     }
+                //     catch(err) {
+                //      console.log(err);
+                //     }
+
+                   
+
+                    
+                //   });
                   
               })
 
   }
 
   public addCityData(clientName: string)
+  {
+    let that = this;
+
+    if (this.cityLayer != null)
+    {
+    this._map.remove(this.cityLayer);
+    }
+
+    let features = [];
+    var count: number = 0;
+
+    citydata[clientName].forEach(city=>
+      {
+        var point = {
+          type: "point",  // autocasts as new Point()
+          longitude: city.longitude,
+          latitude: city.latitude
+        };
+        
+        // Create a graphic and add the geometry and symbol to it
+        var pointGraphic = new this._graphic({
+          attributes : {"objectId":count, "name": "f"+ count},
+          geometry: point,
+        });
+    
+        features.push(pointGraphic);
+        count++;
+      });
+
+      this.featureCountSource.next(features.length);
+
+      let renderer = {
+            type: "simple",  // autocasts as new SimpleRenderer()
+            symbol: {
+              type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
+              size: 8,
+              color: "#ff771d",
+            }
+          };
+    
+          this.cityLayer = new this._featureLayer({
+            fields: [
+              {
+             name: "objectId",
+             alias: "objectId",
+             type: "oid"
+             },
+             {
+               name: "name",
+               alias: "name",
+               type: "string"
+               }
+         ],
+           source: features,
+           renderer: renderer
+         });
+    
+        this._map.add(this.cityLayer);
+     
+      
+      this._mapView.goTo(features).then(function () {
+      //that._mapView.zoom = that._mapView.zoom - 1;
+    });
+  }
+
+  public addCityDataAsGraphicsLayer(clientName: string)
   {
     let that = this;
 
