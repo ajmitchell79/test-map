@@ -5,6 +5,7 @@ import {citydata} from './data/city-data';
 
 import { loadModules } from 'esri-loader';
 import esri = __esri;
+//import { stat } from 'fs';
 
 @Injectable({
   providedIn: 'root'
@@ -43,6 +44,10 @@ export class EsriService {
   _geometryEngine: esri.geometryEngine;
 
   cityFeatures: any;
+  cityGeometries: any;
+  stateFeatures: any[] = [];
+
+  stateTotals : any[] = [];
 
   constructor() { 
     //debugger;
@@ -109,6 +114,8 @@ export class EsriService {
   {
     if (this.stateLayer != null) return;
 
+    let that = this;
+
     this.stateLayer = new this._featureLayer("https://services.arcgis.com/V6ZHFr6zdgNZuVG0/ArcGIS/rest/services/StateTerritoryBoundaries/FeatureServer/0",{
           mode: this._featureLayer.MODE_ONDEMAND,
           outFields: ["*"],
@@ -116,78 +123,96 @@ export class EsriService {
           opacity: 0.5
         });
 
-        this._map.add(this.stateLayer); 
-  }
+        this._map.add(this.stateLayer);
 
-  //******************************************************** */
-  //loop through all the state layer graphics, intersect with points layer, sum the TIV
-  //********************************************************** */
+        //save state features for later on 
+        this.stateLayer.on("layerview-create", function() {
+
+          let query =  that.stateLayer.createQuery();
+          let result = that.stateLayer.queryFeatures(query).then(response =>
+          {
+            response.features.forEach(ftr=> {
+              that.stateFeatures.push(ftr);
+          })
+        });
+        });        
+  }
 
   public intersects()
   {
     debugger;
 
     let that = this;
+
+    //loop through state features
+    this.stateFeatures.forEach(ftr=> {
+
+        let cityQuery =  this.cityLayer.createQuery();
+        cityQuery.outFields = [ "name", "rating" ];
+        cityQuery.geometry = ftr.geometry;
+        //cityQuery.returnGeometry = true;
+          this.cityLayer.queryFeatures(cityQuery).then(result =>
+          {
+              let total =result.features.reduce((a, b) => +a + +b.attributes["rating"], 0);
+              that.stateTotals.push({"state": ftr.attributes["ABBR_NAME"],"rating": total});
+            });
+   
+      });
+
+      console.log('done');
      
-              let query =  this.stateLayer.createQuery();
-              //query.where = "ABBR_NAME ='NY' AND VERSION = 1";
-              let result = this.stateLayer.queryFeatures(query).then(response =>
-              {
+              // let query =  this.stateLayer.createQuery();
+              // //query.where = "ABBR_NAME ='NY' AND VERSION = 1";
+              // let result = this.stateLayer.queryFeatures(query).then(response =>
+              // {
+
+              //   response.features.forEach(ftr=> {
+              //     //that.filterByState(ftr)
+              //     that.stateFeatures.push(ftr);
+              // })
               
-                response.features.forEach(feature=>
-                {
-                  let intersects = this.cityFeatures.filter(graphic => this._geometryEngine.intersects(graphic.geometry, feature.geometry));
+              // this.filterByState(that.stateFeatures);
+              
+             // .then(this.filterByState(stateFeatures));
 
-                  if (intersects) console.log('found');
-                });
+              //   let cityQuery =  this.cityLayer.createQuery();
+              //   cityQuery.geometry = response.features[5].geometry;
+              //    this.cityLayer.queryFeatures(cityQuery).then(z =>
+              //     {
+              //  //       //that.cityFeatures = response.features
+              //         debugger;
+              //      });
+              
+              
+             //   response.features.forEach(feature=> //for each state feature
+               // {
+               //   debugger;
 
-                 // let x = response;
-                  //response.features[0].attributes
+                  //let intersects = this.cityFeatures.filter(graphic => this._geometryEngine.intersects(graphic.geometry, feature.geometry));
+                  //let intersects = this.cityFeatures.filter(graphic => this._geometryEngine.intersect(graphic.geometry, feature.geometry));
 
-                  //*********************************************************** */
-                  // - loop through each point
-                  // - loop through all states until it intersects, THEN EXIT LOOP as youve found the intersetct
-                  //******************************************************************* */
+                  //let res = this._geometryEngine.intersect(this.cityGeometries, feature.geometry);
+                  //let res = this._geometryEngine.intersect(feature.geometry, this.cityGeometries);
 
-                  // that.cityLayer.graphics.items.forEach(graphic=>
-                  //   {
-                      
-                  //     response.features.forEach(feature=>
-                  //       {
-                  //         console.log('intersecting ' + feature.attributes["NAME"]);
-                  //         //if found, break loop
+               //   let cityQuery =  this.cityLayer.createQuery();
+                 //  cityQuery.geometry = feature.geometry.extent;
+               //   this.cityLayer.queryFeatures(cityQuery).then(z =>
+                 //  {
+                //       //that.cityFeatures = response.features
+                 //      debugger;
+                 //   });
 
-                  //        // var int = allPolygons.filter(graphic => geometryEngine.intersects(graphic.geometry, parcelGeometry));
-
-                  //         if(that._geometryEngine.intersects(feature.geometry, graphic.geometry))
-                  //         {
-                  //           console.log('found');
-                  //         }
-
-                  //       });
-
-                  //   });
-
-                //works
-                // response.features.forEach(feature=>
-                //   {
-                //     debugger;
-                    
-                //     try{
-                //       var result = that._geometryEngine.intersects(feature.geometry, that.cityLayer.graphics.items[0].geometry);
-                //     }
-                //     catch(err) {
-                //      console.log(err);
-                //     }
-
-                   
-
-                    
-                //   });
                   
-              })
-
+                  //if ((intersects != null) && (intersects.length > 0))
+                 // {
+                 // debugger;
+                 // }
+                  
+               // });
+          //  });
   }
+
+
 
   public addCityData(clientName: string)
   {
@@ -195,7 +220,7 @@ export class EsriService {
 
     if (this.cityLayer != null)
     {
-    this._map.remove(this.cityLayer);
+      this._map.remove(this.cityLayer);
     }
 
     let features = [];
@@ -211,7 +236,7 @@ export class EsriService {
         
         // Create a graphic and add the geometry and symbol to it
         var pointGraphic = new this._graphic({
-          attributes : {"objectId":count, "name": "f"+ count},
+          attributes : {"objectId":count, "name": "f"+ count, "rating": Math.floor(Math.random() * 11)},
           geometry: point,
         });
     
@@ -241,7 +266,12 @@ export class EsriService {
                name: "name",
                alias: "name",
                type: "string"
-               }
+               },
+               {
+                name: "rating",
+                alias: "rating",
+                type: "integer"
+                }
          ],
            source: features,
            renderer: renderer
@@ -249,14 +279,18 @@ export class EsriService {
     
         this._map.add(this.cityLayer);
 
-         //--
-         let query =  this.cityLayer.createQuery();
-         // let result = this.cityLayer.queryFeatures(query).then(function(response)
-         let result = this.cityLayer.queryFeatures(query).then(response =>
-          //{
-             that.cityFeatures = response.features
-          //}
-          );
+        //  //--
+        //   let query =  this.cityLayer.createQuery();
+        // //  // let result = this.cityLayer.queryFeatures(query).then(function(response)
+        //   let result = this.cityLayer.queryFeatures(query).then(response =>
+        //    {
+        //       that.cityFeatures = response.features;
+
+        //       that.cityGeometries = response.features.map(function(feature) {
+        //         return feature.geometry;
+        //       });
+        //    }
+        //    );
 
      
       this._mapView.goTo(features).then(function () {
