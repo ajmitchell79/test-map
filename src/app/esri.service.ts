@@ -42,6 +42,8 @@ export class EsriService {
   stateLayer: esri.FeatureLayer;
   _geometryEngine: esri.geometryEngine;
 
+  cityFeatures: any;
+
   constructor() { 
     //debugger;
   }
@@ -123,15 +125,23 @@ export class EsriService {
 
   public intersects()
   {
+    debugger;
 
     let that = this;
      
               let query =  this.stateLayer.createQuery();
-             // query.where = "TERR_TYPE = 'State'";
-              let result = this.stateLayer.queryFeatures(query).then(function(response)
+              //query.where = "ABBR_NAME ='NY' AND VERSION = 1";
+              let result = this.stateLayer.queryFeatures(query).then(response =>
               {
               
-                  let x = response;
+                response.features.forEach(feature=>
+                {
+                  let intersects = this.cityFeatures.filter(graphic => this._geometryEngine.intersects(graphic.geometry, feature.geometry));
+
+                  if (intersects) console.log('found');
+                });
+
+                 // let x = response;
                   //response.features[0].attributes
 
                   //*********************************************************** */
@@ -139,22 +149,24 @@ export class EsriService {
                   // - loop through all states until it intersects, THEN EXIT LOOP as youve found the intersetct
                   //******************************************************************* */
 
-                  that.cityLayer.graphics.items.forEach(graphic=>
-                    {
+                  // that.cityLayer.graphics.items.forEach(graphic=>
+                  //   {
                       
-                      response.features.forEach(feature=>
-                        {
-                          console.log('intersecting ' + feature.attributes["NAME"]);
-                          //if found, break loop
+                  //     response.features.forEach(feature=>
+                  //       {
+                  //         console.log('intersecting ' + feature.attributes["NAME"]);
+                  //         //if found, break loop
 
-                          if(that._geometryEngine.intersects(feature.geometry, graphic.geometry))
-                          {
-                            console.log('found');
-                          }
+                  //        // var int = allPolygons.filter(graphic => geometryEngine.intersects(graphic.geometry, parcelGeometry));
 
-                        });
+                  //         if(that._geometryEngine.intersects(feature.geometry, graphic.geometry))
+                  //         {
+                  //           console.log('found');
+                  //         }
 
-                    });
+                  //       });
+
+                  //   });
 
                 //works
                 // response.features.forEach(feature=>
@@ -236,8 +248,17 @@ export class EsriService {
          });
     
         this._map.add(this.cityLayer);
+
+         //--
+         let query =  this.cityLayer.createQuery();
+         // let result = this.cityLayer.queryFeatures(query).then(function(response)
+         let result = this.cityLayer.queryFeatures(query).then(response =>
+          //{
+             that.cityFeatures = response.features
+          //}
+          );
+
      
-      
       this._mapView.goTo(features).then(function () {
       //that._mapView.zoom = that._mapView.zoom - 1;
     });
