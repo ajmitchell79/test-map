@@ -43,6 +43,8 @@ export class EsriService {
   stateLayer: esri.FeatureLayer;
   _geometryEngine: esri.geometryEngine;
 
+  classBreaksLayer: esri.GraphicsLayer;
+
   cityFeatures: any;
   cityGeometries: any;
   stateFeatures: any[] = [];
@@ -116,11 +118,27 @@ export class EsriService {
 
     let that = this;
 
+    
+
+    let renderer = {
+      type: "simple",  // autocasts as new SimpleRenderer()
+      symbol: {
+        type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+        color: "transparent",
+        style: "solid",
+        outline: {
+          width: 0.2,
+          color:"#ff771d"
+        }
+      }
+    };
+
     this.stateLayer = new this._featureLayer("https://services.arcgis.com/V6ZHFr6zdgNZuVG0/ArcGIS/rest/services/StateTerritoryBoundaries/FeatureServer/0",{
           mode: this._featureLayer.MODE_ONDEMAND,
           outFields: ["*"],
           definitionExpression: "TERR_TYPE = 'State' AND VERSION = 1",
-          opacity: 0.5
+          opacity: 1.0,
+          renderer: renderer
         });
 
         this._map.add(this.stateLayer);
@@ -129,20 +147,33 @@ export class EsriService {
         this.stateLayer.on("layerview-create", function() {
 
           let query =  that.stateLayer.createQuery();
+          query.returnGeometry = true;
           let result = that.stateLayer.queryFeatures(query).then(response =>
           {
             response.features.forEach(ftr=> {
               that.stateFeatures.push(ftr);
           })
         });
-        });        
+        });    
+        
+        //class breaks layer
+        this.classBreaksLayer = new this._graphicsLayer()
+        this._map.add(this.classBreaksLayer);
   }
 
   public intersects()
   {
-    debugger;
-
     let that = this;
+
+   // if (this.classBreaksLayer == null)
+  //  {
+    //    this.classBreaksLayer = new this._graphicsLayer()
+    //    this._map.add(this.classBreaksLayer);
+   // }
+
+  //  this.cityLayer = new this._graphicsLayer();
+    this.classBreaksLayer.graphics.removeAll();
+
 
     //loop through state features
     this.stateFeatures.forEach(ftr=> {
@@ -150,73 +181,61 @@ export class EsriService {
         let cityQuery =  this.cityLayer.createQuery();
         cityQuery.outFields = [ "name", "rating" ];
         cityQuery.geometry = ftr.geometry;
+        cityQuery.spatialRelationship = "intersects";
         //cityQuery.returnGeometry = true;
+
+       
+
           this.cityLayer.queryFeatures(cityQuery).then(result =>
           {
               let total =result.features.reduce((a, b) => +a + +b.attributes["rating"], 0);
               that.stateTotals.push({"state": ftr.attributes["ABBR_NAME"],"rating": total});
+              console.log(ftr.attributes["ABBR_NAME"] + ", count: " + result.features.length + ", rating-total: " + total);
+
+              var fillSymbol = {
+                type: "simple-fill",  // autocasts as new SimpleMarkerSymbol()
+                color: that.classifyState(total)
+              };
+  
+              var stateGraphic = new this._graphic({
+                geometry: ftr.geometry,
+                symbol: fillSymbol
+              });
+  
+              this.classBreaksLayer.graphics.add(stateGraphic);
             });
-   
       });
-
-      console.log('done');
-     
-              // let query =  this.stateLayer.createQuery();
-              // //query.where = "ABBR_NAME ='NY' AND VERSION = 1";
-              // let result = this.stateLayer.queryFeatures(query).then(response =>
-              // {
-
-              //   response.features.forEach(ftr=> {
-              //     //that.filterByState(ftr)
-              //     that.stateFeatures.push(ftr);
-              // })
-              
-              // this.filterByState(that.stateFeatures);
-              
-             // .then(this.filterByState(stateFeatures));
-
-              //   let cityQuery =  this.cityLayer.createQuery();
-              //   cityQuery.geometry = response.features[5].geometry;
-              //    this.cityLayer.queryFeatures(cityQuery).then(z =>
-              //     {
-              //  //       //that.cityFeatures = response.features
-              //         debugger;
-              //      });
-              
-              
-             //   response.features.forEach(feature=> //for each state feature
-               // {
-               //   debugger;
-
-                  //let intersects = this.cityFeatures.filter(graphic => this._geometryEngine.intersects(graphic.geometry, feature.geometry));
-                  //let intersects = this.cityFeatures.filter(graphic => this._geometryEngine.intersect(graphic.geometry, feature.geometry));
-
-                  //let res = this._geometryEngine.intersect(this.cityGeometries, feature.geometry);
-                  //let res = this._geometryEngine.intersect(feature.geometry, this.cityGeometries);
-
-               //   let cityQuery =  this.cityLayer.createQuery();
-                 //  cityQuery.geometry = feature.geometry.extent;
-               //   this.cityLayer.queryFeatures(cityQuery).then(z =>
-                 //  {
-                //       //that.cityFeatures = response.features
-                 //      debugger;
-                 //   });
-
-                  
-                  //if ((intersects != null) && (intersects.length > 0))
-                 // {
-                 // debugger;
-                 // }
-                  
-               // });
-          //  });
   }
 
+  private classifyState(totalRating: number) : string
+  {
+    if (totalRating >= 0 && totalRating < 25)
+      return "rgb(170, 170, 170)";
 
+      if (totalRating >= 25 && totalRating < 50)
+      return "rgb(248, 227, 194)";
+
+      if (totalRating >= 50 && totalRating < 100)
+      return "rgb(229, 153, 140)";
+
+      if (totalRating >= 101 && totalRating < 150)
+      return "rgb(216, 104, 104)";
+
+      if (totalRating >= 151 && totalRating < 200)
+      return "rgb(175, 70, 93)";
+
+      if (totalRating >= 200)
+      return "rgb(135, 35, 81)";
+
+
+  }
 
   public addCityData(clientName: string)
   {
     let that = this;
+
+    //remove all class breaks layer graphics
+    this.classBreaksLayer.graphics.removeAll();
 
     if (this.cityLayer != null)
     {
@@ -278,20 +297,6 @@ export class EsriService {
          });
     
         this._map.add(this.cityLayer);
-
-        //  //--
-        //   let query =  this.cityLayer.createQuery();
-        // //  // let result = this.cityLayer.queryFeatures(query).then(function(response)
-        //   let result = this.cityLayer.queryFeatures(query).then(response =>
-        //    {
-        //       that.cityFeatures = response.features;
-
-        //       that.cityGeometries = response.features.map(function(feature) {
-        //         return feature.geometry;
-        //       });
-        //    }
-        //    );
-
      
       this._mapView.goTo(features).then(function () {
       //that._mapView.zoom = that._mapView.zoom - 1;
