@@ -5,6 +5,16 @@
                 <input class="esri-component esri-widget--button esri-widget esri-interactive" (click)="switchDimension()" type="button" value="{{dimensionLabel}}">
             </div>
 
+            <div id="tracksDiv">
+                <select id="tracks_dd" (change)="onChange($event)" [(value)]="selectedTrack">
+                    <option *ngFor="let track of tracks" [value]="track">
+                        {{ track }}
+                    </option>
+                </select>
+                <br>
+                <span style="font-size:35pt">{{selectedTrack}}</span>
+            </div>
+
             <div id="mapDiv" #mapViewNode>
             </div>
         </div>

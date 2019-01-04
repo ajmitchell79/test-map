@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import {IEvent} from './iEvent';
-import {citydata} from './data/city-data';
+import {IEvent} from '../iEvent';
+import {citydata} from '../data/city-data';
 
 import { loadModules } from 'esri-loader';
 import esri = __esri;
@@ -10,7 +10,7 @@ import esri = __esri;
 @Injectable({
   providedIn: 'root'
 })
-export class EsriService {
+export class Esri3dService {
 
   private mapInitialisedSource = new Subject<void>();
   public mapInitialised$ = this.mapInitialisedSource.asObservable();
@@ -40,8 +40,6 @@ export class EsriService {
 
   //cityLayer: esri.GraphicsLayer;
   cityLayer: any;
-  stormLayer: any;
-  storm3dLayer: any;
   stateLayer: esri.FeatureLayer;
   _geometryEngine: esri.geometryEngine;
 
@@ -116,7 +114,7 @@ export class EsriService {
   
   public addFeatureLayer()
   {
-   // if (this.stateLayer != null) return;
+    if (this.stateLayer != null) return;
 
     let that = this;
 
@@ -129,7 +127,7 @@ export class EsriService {
         color: "transparent",
         style: "solid",
         outline: {
-          width: 0.3,
+          width: 0.2,
           color:"#ff771d"
         }
       }
@@ -247,8 +245,6 @@ export class EsriService {
     let features = [];
     var count: number = 0;
 
-    
-
     citydata[clientName].forEach(city=>
       {
         var point = {
@@ -355,17 +351,9 @@ export class EsriService {
 
   public addStormGraphic2D(event: IEvent)
   {
-    if (this.stormLayer == null)
-    {
-        this.stormLayer = new this._graphicsLayer()
-        this._map.add(this.stormLayer);
-    }
-
-  //  this.cityLayer = new this._graphicsLayer();
-    this.stormLayer.graphics.removeAll();
-
-
     let that = this;
+    let layer = new this._graphicsLayer();
+    this._map.add(layer);
 
     let paths = new Array();
 
@@ -393,12 +381,12 @@ export class EsriService {
        symbol: lineSymbol
      });
 
-     this.stormLayer.add(polylineGraphic);
+     layer.add(polylineGraphic);
 
        //set view to exent of graphics layer
-       this._mapView.goTo(this.stormLayer.graphics).then(function () {
+       this._mapView.goTo(layer.graphics).then(function () {
        
-        //that._mapView.zoom = that._mapView.zoom - 1;
+        that._mapView.zoom = that._mapView.zoom - 1;
     });
 
   }
@@ -488,17 +476,8 @@ export class EsriService {
   public addStormGraphic3D(event: IEvent)
   {
     let that = this;
-
-    if (this.storm3dLayer == null)
-    {
-        this.storm3dLayer = new this._graphicsLayer()
-        this._map.add(this.storm3dLayer);
-    }
-
-    this.storm3dLayer.graphics.removeAll();
-
-    //let layer = new this._graphicsLayer();
-    //this._map.add(layer);
+    let layer = new this._graphicsLayer();
+    this._map.add(layer);
 
     let paths = new Array();
 
@@ -522,13 +501,12 @@ export class EsriService {
            symbol: this.generateCylinderSymbol2((Math.floor(Math.random() * 32) + 10) *10000)
           }); 
          
-          //layer.add(pointGraphic);
-          this.storm3dLayer.add(pointGraphic);
+          layer.add(pointGraphic);
       });
 
      // debugger;
    
-      this._sceneView.goTo(this.storm3dLayer.graphics).then(function () {
+      this._sceneView.goTo(layer.graphics).then(function () {
        
         //that._sceneView.zoom = that._sceneView.zoom - 1;
         //that._sceneView.camera.tilt = 14.8777;

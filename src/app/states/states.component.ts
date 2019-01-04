@@ -59,5 +59,10 @@ export class StatesComponent implements OnInit {
      this.esriService.intersects();
    }
 
+   removeClassification()
+   {
+     
+   }
+
 
 }
