@@ -10,9 +10,19 @@
                 <br>
                 <br>
                 <input type="button" value="Classify" (click)="intersectClick()">&nbsp;
-                <input type="button" value="X" (click)="removeClassification()">
+                <input type="button" value="X" (click)="removeClassification()" class="closeButton">
                 <br>
-                <span style="font-size:40pt">{{featureCount}}</span>
+                <br>
+                <div class="city-details"></div>
+                <span style="font-size:45pt">{{featureCount}}</span>
+                <br>
+                <div style="margin-top:-10px;padding:0px 2px 0px 5px">locations</div>
+                <br>
+                <div class="city-details">
+                    {{cityLabel.name}},
+                    <br> {{cityLabel.state}}
+                    <br>
+                </div>
             </div>
 
             <div id="mapDiv" #mapViewNode>

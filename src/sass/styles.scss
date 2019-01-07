@@ -115,4 +115,18 @@ select>option {
     background-color: black;
     color: #ff771d;
     border: solid 1px #ff771d;
+    cursor: pointer;
+}
+
+.closeButton {
+    background-color: #ff771d;
+    color: black;
+}
+
+.city-details {
+    border-top: solid 1px #ff771d;
+    font-weight: bold;
+    font-size: 14pt;
+    color: #ff771d;
+    padding: 3px;
 }

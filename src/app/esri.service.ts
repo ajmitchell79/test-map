@@ -5,7 +5,7 @@ import {citydata} from './data/city-data';
 
 import { loadModules } from 'esri-loader';
 import esri = __esri;
-//import { stat } from 'fs';
+import {ICity} from './models/iCity';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +17,9 @@ export class EsriService {
 
   private featureCountSource = new Subject<number>();
   public featureCount$ = this.featureCountSource.asObservable();
+
+  private cityLocationSource = new Subject<ICity>();
+  public cityLocation$ = this.cityLocationSource.asObservable();
 
   _sceneView: esri.SceneView; 
   _map: esri.Map;
@@ -72,6 +75,8 @@ export class EsriService {
     ])
       .then(([EsriMap, EsriMapView,EsriGraphicsLayer, EsriGraphic, EsriSimpleLineSymbol, EsriFeatureLayer, geometryEngine]) => {
 
+        let that = this;
+
         this._graphic = EsriGraphic;
         this._graphicsLayer = EsriGraphicsLayer;
         this._featureLayer = EsriFeatureLayer;
@@ -99,6 +104,42 @@ export class EsriService {
         this._mapView = new EsriMapView(mapViewProperties);
 
         this._mapView.ui.remove(["attribution"]);
+
+        //--
+// Get the screen point from the view's click event
+    this._mapView.on("click", function (event) {
+    //this._mapView.on("mouseover", function (event) {
+      var screenPoint = {
+        x: event.x,
+        y: event.y
+      };
+ 
+  // Search for graphics at the clicked location
+  that._mapView.hitTest(screenPoint).then(function (response) {
+   if (response.results.length) {
+
+      debugger;
+
+      let city = <ICity>{objectId: response.results[0].graphic.getAttribute("objectId"),
+        name:response.results[0].graphic.getAttribute("name"),
+        rating:response.results[0].graphic.getAttribute("rating"),
+        state: response.results[0].graphic.getAttribute("state")
+      }
+
+      that.cityLocationSource.next(city);
+
+    //var graphic = response.results.filter(function (result) {
+     // check if the graphic belongs to the layer of interest
+     //return result.graphic.layer === myLayer;
+    //})[0].graphic;
+    // do something with the result graphic
+    //console.log(graphic.attributes);
+   
+   }
+  });
+ });
+
+        //--
 
         this._mapView.when(() => {
 
@@ -244,8 +285,6 @@ export class EsriService {
     let features = [];
     var count: number = 0;
 
-    
-
     citydata[clientName].forEach(city=>
       {
         var point = {
@@ -256,7 +295,7 @@ export class EsriService {
         
         // Create a graphic and add the geometry and symbol to it
         var pointGraphic = new this._graphic({
-          attributes : {"objectId":count, "name": "f"+ count, "rating": Math.floor(Math.random() * 11)},
+          attributes : {"objectId":count, "name": city.city,"state": city.state, "rating": Math.floor(Math.random() * 11)},
           geometry: point,
         });
     
@@ -287,6 +326,11 @@ export class EsriService {
                alias: "name",
                type: "string"
                },
+               {
+                name: "state",
+                alias: "state",
+                type: "string"
+                },
                {
                 name: "rating",
                 alias: "rating",
@@ -340,8 +384,6 @@ export class EsriService {
     
         this.cityLayer.graphics.add(pointGraphic);
       });
-
-   // this._map.add(this.cityLayer);
 
     //set view to exent of graphics layer
     this._mapView.goTo( this.cityLayer.graphics).then(function () {

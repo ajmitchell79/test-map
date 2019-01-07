@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef,ViewEncapsulation  } from '@an
 import {EsriService} from '../esri.service';
 import { Subscription } from 'rxjs';
 import {IEvent} from '../iEvent';
+import {ICity} from '../models/iCity';
 
 @Component({
   selector: 'app-states',
@@ -19,7 +20,11 @@ export class StatesComponent implements OnInit {
   public clients : string[] = ["client_1", "client_2", "client_3"];
 
   private featureCountRef: Subscription = null;
+ 
   featureCount: number;
+
+  private cityLocationRef: Subscription = null;
+  cityLabel: ICity;
 
   constructor(private esriService : EsriService) { }
 
@@ -35,6 +40,10 @@ export class StatesComponent implements OnInit {
       this.featureCount = count;
     });
 
+
+    this.esriService.cityLocation$.subscribe((location: ICity)=>{
+      this.cityLabel = location;
+    });
 
   }
 
