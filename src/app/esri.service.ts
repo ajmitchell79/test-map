@@ -121,7 +121,7 @@ export class EsriService {
       debugger;
 
       let city = <ICity>{objectId: response.results[0].graphic.getAttribute("objectId"),
-        name:response.results[0].graphic.getAttribute("name"),
+        name:response.results[0].graphic.getAttribute("name") + ",",
         rating:response.results[0].graphic.getAttribute("rating"),
         state: response.results[0].graphic.getAttribute("state")
       }
