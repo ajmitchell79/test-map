@@ -29,7 +29,8 @@
                         },
                         "assets": [
                             "src/favicon.ico",
-                            "src/assets"
+                            "src/assets",
+                            "src/web.config"
                         ],
                         "styles": [
                             "src/sass/styles.scss"
@@ -94,7 +95,8 @@
                         "scripts": [],
                         "assets": [
                             "src/favicon.ico",
-                            "src/assets"
+                            "src/assets",
+                            "src/web.config"
                         ]
                     }
                 },
