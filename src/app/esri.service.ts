@@ -166,16 +166,7 @@ export class EsriService {
   public intersects()
   {
     let that = this;
-
-   // if (this.classBreaksLayer == null)
-  //  {
-    //    this.classBreaksLayer = new this._graphicsLayer()
-    //    this._map.add(this.classBreaksLayer);
-   // }
-
-  //  this.cityLayer = new this._graphicsLayer();
     this.classBreaksLayer.graphics.removeAll();
-
 
     //loop through state features
     this.stateFeatures.forEach(ftr=> {
@@ -230,6 +221,12 @@ export class EsriService {
       return "rgb(135, 35, 81)";
 
 
+  }
+
+  public removeClassifyLayer()
+  {
+    if ( this.classBreaksLayer != null)
+        this.classBreaksLayer.graphics.removeAll();
   }
 
   public addCityData(clientName: string)
@@ -355,14 +352,17 @@ export class EsriService {
 
   public addStormGraphic2D(event: IEvent)
   {
-    if (this.stormLayer == null)
-    {
+    debugger;
+    if (this.stormLayer != null)
+      this._map.remove(this.stormLayer);
+
+   // {
         this.stormLayer = new this._graphicsLayer()
         this._map.add(this.stormLayer);
-    }
+    //}
 
   //  this.cityLayer = new this._graphicsLayer();
-    this.stormLayer.graphics.removeAll();
+    //this.stormLayer.graphics.removeAll();
 
 
     let that = this;

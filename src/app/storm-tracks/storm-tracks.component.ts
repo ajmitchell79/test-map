@@ -19,7 +19,7 @@ export class StormTracksComponent implements OnInit {
   private twoDimension : boolean = false;
   private dimensionLabel: string = "2D";
   private stormEvent : IEvent;
-  private IE: boolean;
+  public IE: boolean;
 
   tracks: string[] = ['wkt1','wkt2'];
   selectedTrack: string = "wkt1";
@@ -44,6 +44,7 @@ export class StormTracksComponent implements OnInit {
 
   switchGraphics(event: IEvent)
   {
+    debugger;
     this.twoDimension ? this.esriService.addStormGraphic2D(event) :  this.esriService.addStormGraphic3D(event);
     this.esriService.addFeatureLayer();
 
