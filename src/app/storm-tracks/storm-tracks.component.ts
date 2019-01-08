@@ -24,14 +24,14 @@ export class StormTracksComponent implements OnInit {
   tracks: string[] = ['wkt1','wkt2'];
   selectedTrack: string = "wkt1";
 
-  constructor(private esriService : EsriService) { }
+  constructor(private esriService : EsriService) { } 
 
   ngOnInit() {
     this.IE = this.checkIE();
 
     this.switchDimension();
 
-    this.esriService.mapInitialised$.subscribe(()=>{
+    this.esriService.mapInitialised$.subscribe(()=>{ 
       //debugger;
 
       let event = <IEvent>{eventID: 1234, 
@@ -42,9 +42,9 @@ export class StormTracksComponent implements OnInit {
     });
   }
 
-  switchGraphics(event: IEvent)
+  switchGraphics(event: IEvent) 
   {
-    debugger;
+   // debugger;
     this.twoDimension ? this.esriService.addStormGraphic2D(event) :  this.esriService.addStormGraphic3D(event);
     this.esriService.addFeatureLayer();
 
@@ -63,7 +63,7 @@ export class StormTracksComponent implements OnInit {
 
   onChange($event)
    {
-     debugger;
+    // debugger;
      this.selectedTrack = $event.target.value;
      //debugger;
      this.twoDimension ? this.esriService.addStormGraphic2D(<IEvent>{eventID: 1234,wkt: stormdata[this.selectedTrack]}) 

@@ -118,11 +118,12 @@ export class EsriService {
   that._mapView.hitTest(screenPoint).then(function (response) {
    if (response.results.length) {
 
-      debugger;
+     // debugger;
 
       let city = <ICity>{objectId: response.results[0].graphic.getAttribute("objectId"),
         name:response.results[0].graphic.getAttribute("name") + ",",
         rating:response.results[0].graphic.getAttribute("rating"),
+        population: response.results[0].graphic.getAttribute("population"),
         state: response.results[0].graphic.getAttribute("state")
       }
 
@@ -224,7 +225,7 @@ export class EsriService {
           {
               let total =result.features.reduce((a, b) => +a + +b.attributes["rating"], 0);
               that.stateTotals.push({"state": ftr.attributes["ABBR_NAME"],"rating": total});
-              console.log(ftr.attributes["ABBR_NAME"] + ", count: " + result.features.length + ", rating-total: " + total);
+              //console.log(ftr.attributes["ABBR_NAME"] + ", count: " + result.features.length + ", rating-total: " + total);
 
               var fillSymbol = {
                 type: "simple-fill",  // autocasts as new SimpleMarkerSymbol()
@@ -295,7 +296,12 @@ export class EsriService {
         
         // Create a graphic and add the geometry and symbol to it
         var pointGraphic = new this._graphic({
-          attributes : {"objectId":count, "name": city.city,"state": city.state, "rating": Math.floor(Math.random() * 11)},
+          attributes : {
+            "objectId":count, 
+            "name": city.city,
+            "state": city.state, 
+           "population": parseInt(city.population),
+            "rating": Math.floor(Math.random() * 11)},
           geometry: point,
         });
     
@@ -331,6 +337,11 @@ export class EsriService {
                 alias: "state",
                 type: "string"
                 },
+                {
+                  name: "population",
+                  alias: "population",
+                  type: "integer"
+                  },
                {
                 name: "rating",
                 alias: "rating",
@@ -354,14 +365,14 @@ export class EsriService {
 
     if (this.cityLayer == null)
     {
-        this.cityLayer = new this._graphicsLayer()
-        this._map.add(this.cityLayer);
+        this.cityLayer = new this._graphicsLayer();
+        this._map.add(this.cityLayer); 
     }
 
   //  this.cityLayer = new this._graphicsLayer();
-    this.cityLayer.graphics.removeAll();
+    this.cityLayer.graphics.removeAll();  
 
-    //citydata.client_1.forEach(city=>
+    //citydata.client_1.forEach(city=> 
     citydata[clientName].forEach(city=>
       {
         var point = {
@@ -394,7 +405,7 @@ export class EsriService {
 
   public addStormGraphic2D(event: IEvent)
   {
-    debugger;
+   // debugger;
     if (this.stormLayer != null)
       this._map.remove(this.stormLayer);
 

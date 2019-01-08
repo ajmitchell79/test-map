@@ -3,5 +3,5 @@ export interface ICity {
     name: string;
     state: string;
     rating:number;
-    
+    population:number;
 }
