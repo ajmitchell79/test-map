@@ -70,7 +70,8 @@ export class StatesComponent implements OnInit {
 
    removeClassification()
    {
-    this.esriService.removeClassifyLayer();
+    //this.esriService.removeClassifyLayer();
+    this.esriService.removeStatesLayer();
    }
 
 

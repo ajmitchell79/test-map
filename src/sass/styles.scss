@@ -52,16 +52,6 @@
     z-index: 1000;
 }
 
-#clientDiv,
-#tracksDiv {
-    position: absolute;
-    top: 12px;
-    right: 15px;
-    z-index: 1000;
-    padding: 3px;
-    color: #ff771d;
-}
-
 div.esri-ui-inner-container.esri-ui-corner-container {
     //.esri-ui-inner-container {
     top: 50px !important;
@@ -123,10 +113,32 @@ select>option {
     color: black;
 }
 
+.featureCount {
+    font-size: 45pt;
+    border-top: solid 3px #ff771d;
+}
+
 .city-details {
-    border-top: solid 1px #ff771d;
     font-weight: bold;
     font-size: 14pt;
     color: #ff771d;
+}
+
+#clientDiv {
+    position: absolute;
+    text-align: right;
+    top: 10px;
+    right: 5px;
+    z-index: 1000;
+    padding: 5px;
+    color: #ff771d;
+}
+
+#tracksDiv {
+    position: absolute;
+    top: 5px;
+    right: 1px;
+    z-index: 1000;
     padding: 3px;
+    color: #ff771d;
 }

@@ -53,8 +53,14 @@ export class EsriService {
   cityFeatures: any;
   cityGeometries: any;
   stateFeatures: any[] = [];
+  classifyFeatures: any[] = [];
 
-  stateTotals : any[] = [];
+  //stateTotals : any[] = [];
+  statesFeatureLayer: any;
+
+  //_legend :any;
+
+  _colorRendererCreator:any;
 
   constructor() { 
     //debugger;
@@ -71,9 +77,11 @@ export class EsriService {
       'esri/Graphic',
       "esri/symbols/SimpleLineSymbol",
       "esri/layers/FeatureLayer",
-      "esri/geometry/geometryEngine"
+      "esri/geometry/geometryEngine",
+      "esri/renderers/smartMapping/creators/color",
+      "esri/widgets/Legend"
     ])
-      .then(([EsriMap, EsriMapView,EsriGraphicsLayer, EsriGraphic, EsriSimpleLineSymbol, EsriFeatureLayer, geometryEngine]) => {
+      .then(([EsriMap, EsriMapView,EsriGraphicsLayer, EsriGraphic, EsriSimpleLineSymbol, EsriFeatureLayer, geometryEngine, colorRendererCreator, Legend]) => {
 
         let that = this;
 
@@ -84,6 +92,10 @@ export class EsriService {
         this._mapView = EsriMapView;
         //this._geometryEngine = new geometryEngine();
         this._geometryEngine = geometryEngine;
+
+        this._colorRendererCreator = colorRendererCreator;
+
+        //this._legend = Legend;
 
         // Set type for Map constructor properties
         const mapProperties: esri.MapProperties = {
@@ -104,6 +116,11 @@ export class EsriService {
         this._mapView = new EsriMapView(mapViewProperties);
 
         this._mapView.ui.remove(["attribution"]);
+
+        this._mapView.ui.add(new Legend({
+          view: this._mapView
+        }), "bottom-right");
+  
 
         //--
 // Get the screen point from the view's click event
@@ -162,8 +179,6 @@ export class EsriService {
 
     let that = this;
 
-    
-
     let renderer = {
       type: "simple",  // autocasts as new SimpleRenderer()
       symbol: {
@@ -210,65 +225,116 @@ export class EsriService {
     let that = this;
     this.classBreaksLayer.graphics.removeAll();
 
-    //loop through state features
+
+    //let featureCount : number =this.stateFeatures.length;
+    let count =1;
+
+
+       //loop through state features
     this.stateFeatures.forEach(ftr=> {
 
         let cityQuery =  this.cityLayer.createQuery();
-        cityQuery.outFields = [ "name", "rating" ];
+        cityQuery.outFields = [ "name", "population" ];
         cityQuery.geometry = ftr.geometry;
         cityQuery.spatialRelationship = "intersects";
         //cityQuery.returnGeometry = true;
 
-       
-
           this.cityLayer.queryFeatures(cityQuery).then(result =>
           {
-              let total =result.features.reduce((a, b) => +a + +b.attributes["rating"], 0);
-              that.stateTotals.push({"state": ftr.attributes["ABBR_NAME"],"rating": total});
-              //console.log(ftr.attributes["ABBR_NAME"] + ", count: " + result.features.length + ", rating-total: " + total);
+              let total =result.features.reduce((a, b) => +a + +b.attributes["population"], 0);
+              console.log(ftr.attributes["ABBR_NAME"] + " - " + total);
 
-              var fillSymbol = {
-                type: "simple-fill",  // autocasts as new SimpleMarkerSymbol()
-                color: that.classifyState(total)
-              };
+          //    var fillSymbol = {
+          //      type: "simple-fill",  // autocasts as new SimpleMarkerSymbol()
+          //      color: that.classifyState(total)
+          //    };
   
               var stateGraphic = new this._graphic({
                 geometry: ftr.geometry,
-                symbol: fillSymbol
+                attributes : {
+                  "objectId":count, 
+                  "name": ftr.attributes["ABBR_NAME"], 
+                  "population": total,
+                }
               });
-  
-              this.classBreaksLayer.graphics.add(stateGraphic);
-            });
+
+              that.classifyFeatures.push(stateGraphic);
+
+              //only add layer once all state features have been processed
+              if (count == that.stateFeatures.length)
+              {
+                that.addstatesFeatureLayer();
+              }
+
+              count++;
+            })
       });
   }
 
-  private classifyState(totalRating: number) : string
+  private addstatesFeatureLayer()
   {
-    if (totalRating >= 0 && totalRating < 25)
-      return "rgb(170, 170, 170)";
+    this.removeStatesLayer();
 
-      if (totalRating >= 25 && totalRating < 50)
-      return "rgb(248, 227, 194)";
+    this.statesFeatureLayer = new this._featureLayer({
+      fields: [
+        {
+       name: "objectId",
+       alias: "objectId",
+       type: "oid"
+       },
+       {
+         name: "name",
+         alias: "name",
+         type: "string"
+         },
+          {
+            name: "population",
+            alias: "population",
+            type: "integer"
+            }
+   ],
+     source: this.classifyFeatures,
+     //renderer: renderer
+   });
 
-      if (totalRating >= 50 && totalRating < 100)
-      return "rgb(229, 153, 140)";
+   var params = {
+    layer: this.statesFeatureLayer,
+    field: "population",
+    //normalizationField: "EDUCBASECY",
+    basemap: this._map.basemap,
+    classificationMethod: "quantile",
+    numClasses: 10,
+    legendOptions: {
+      title: "Population by State"
+    }
+  };
 
-      if (totalRating >= 101 && totalRating < 150)
-      return "rgb(216, 104, 104)";
+  let that = this;
 
-      if (totalRating >= 151 && totalRating < 200)
-      return "rgb(175, 70, 93)";
+  this._colorRendererCreator.createClassBreaksRenderer(params)
+  .then(function(response){   
+    that.statesFeatureLayer.renderer = response.renderer;
+    that._map.add(that.statesFeatureLayer, that._map.layers.length - 1);
+   
+  });
 
-      if (totalRating >= 200)
-      return "rgb(135, 35, 81)";
 
 
-  }
+  //this._map.add(this.statesFeatureLayer);
+  } 
+
+
 
   public removeClassifyLayer()
   {
     if ( this.classBreaksLayer != null)
         this.classBreaksLayer.graphics.removeAll();
+  }
+
+  public removeStatesLayer()
+  {
+    if ( this.statesFeatureLayer != null)
+      this._map.remove(this.statesFeatureLayer);
   }
 
   public addCityData(clientName: string)
@@ -321,6 +387,7 @@ export class EsriService {
           };
     
           this.cityLayer = new this._featureLayer({
+            title:"US Locations",
             fields: [
               {
              name: "objectId",

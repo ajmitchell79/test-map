@@ -1,22 +1,22 @@
 <div class="container-fluid" style="height:100%;">
     <div class="row" style="height:100%;">
         <div class="col p-0" style="height:100%;">
-            <div id="clientDiv">
-                <select id="clients_dd" (change)="onChange($event)" [(value)]="selectedClient">
+            <div id="clientDiv" style="">
+                <div style="padding:5px">
+                    <select id="clients_dd" (change)="onChange($event)" [(value)]="selectedClient">
                 <option *ngFor="let client of clients" [value]="client">
                     {{ client }}
                 </option>
-            </select>
-                <br>
-                <br>
-                <input type="button" value="Classify" (click)="intersectClick()">&nbsp;
-                <input type="button" value="X" (click)="removeClassification()" class="closeButton">
-                <br>
-                <br>
-                <div class="city-details"></div>
-                <span style="font-size:45pt">{{featureCount}}</span>
+                </select>
+                </div>
+                <div style="padding:5px 0px 10px 5px">
+                    <input type="button" value="Classify" (click)="intersectClick()">&nbsp;
+                    <input type="button" value="X" (click)="removeClassification()" class="closeButton">
+                </div>
 
-                <div style="margin-top:-10px;padding:0px 2px 0px 5px">locations</div>
+                <div class="featureCount">{{featureCount}}</div>
+
+                <div style="border-bottom:solid 3px #ff771d">locations</div>
 
                 <div class="city-details">
                     {{cityLabel?.name}}
