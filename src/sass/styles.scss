@@ -47,7 +47,7 @@
 
 #infoDiv {
     position: absolute;
-    top: 12px;
+    top: 15px;
     left: 15px;
     z-index: 1000;
 }
@@ -136,9 +136,34 @@ select>option {
 
 #tracksDiv {
     position: absolute;
-    top: 5px;
-    right: 1px;
+    top: 12px;
+    right: 5px;
     z-index: 1000;
-    padding: 3px;
+    padding: 5px;
     color: #ff771d;
+}
+
+.esri-legend__service {
+    background-color: #000;
+    padding: 5px 10px;
+}
+
+.esri-widget__heading {
+    color: #EEE;
+}
+
+.esri-legend__layer-table {
+    margin-bottom: 0px;
+}
+
+.esri-legend__layer-caption,
+.esri-legend__layer-cell {
+    color: #EEE;
+    font-weight: bold;
+}
+
+div.esri-component.esri-legend.esri-widget--panel.esri-widget {
+    max-height: 200px;
+    max-width: 200px;
+    border: solid 1px #ff771d;
 }
