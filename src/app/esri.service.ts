@@ -135,7 +135,7 @@ export class EsriService {
   that._mapView.hitTest(screenPoint).then(function (response) {
    if (response.results.length) {
 
-     // debugger;
+      debugger;
 
       let city = <ICity>{objectId: response.results[0].graphic.getAttribute("objectId"),
         name:response.results[0].graphic.getAttribute("name") + ",",
