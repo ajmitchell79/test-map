@@ -119,7 +119,7 @@ export class EsriService {
 
         this._mapView.ui.add(new Legend({
           view: this._mapView
-        }), "bottom-right");
+        }), "bottom-left");
   
 
         //--
@@ -139,7 +139,6 @@ export class EsriService {
 
       let city = <ICity>{objectId: response.results[0].graphic.getAttribute("objectId"),
         name:response.results[0].graphic.getAttribute("name") + ",",
-        rating:response.results[0].graphic.getAttribute("rating"),
         population: response.results[0].graphic.getAttribute("population"),
         state: response.results[0].graphic.getAttribute("state")
       }
@@ -302,7 +301,8 @@ export class EsriService {
     field: "population",
     //normalizationField: "EDUCBASECY",
     basemap: this._map.basemap,
-    classificationMethod: "quantile",
+   // classificationMethod: "quantile",
+   classificationMethod:"natural-breaks",
     numClasses: 10,
     legendOptions: {
       title: "Population by State"
@@ -366,8 +366,8 @@ export class EsriService {
             "objectId":count, 
             "name": city.city,
             "state": city.state, 
-           "population": parseInt(city.population),
-            "rating": Math.floor(Math.random() * 11)},
+           "population": parseInt(city.population)
+            },
           geometry: point,
         });
     
@@ -409,11 +409,6 @@ export class EsriService {
                   alias: "population",
                   type: "integer"
                   },
-               {
-                name: "rating",
-                alias: "rating",
-                type: "integer"
-                }
          ],
            source: features,
            renderer: renderer

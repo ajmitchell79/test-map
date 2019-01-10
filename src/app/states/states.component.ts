@@ -42,7 +42,12 @@ export class StatesComponent implements OnInit {
 
 
     this.esriService.cityLocation$.subscribe((location: ICity)=>{
+
+      debugger;
+
+      if (location.name !== "undefined,")
       this.cityLabel = location;
+      
     });
 
   }
