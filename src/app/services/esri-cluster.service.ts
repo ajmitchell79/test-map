@@ -54,7 +54,11 @@ export class EsriClusterService {
 
   _clusterResolution:any;
   _visitedExtent: any = null;
+
+  //************************************************* */
+  //TODO: look at the size of this
   _clusterTolerance = 50; //options.distance || 50; TODO:should this go back in? 
+  //************************************************* */
 
   _useDefaultSymbol: false;
   _defaultRenderer:any = {}; //TODO: this needs to be populated with something
@@ -257,7 +261,7 @@ export class EsriClusterService {
   {
     let that = this;
 
-    console.log('Add city layer graphics');
+   // console.log('Add city layer graphics');
 
     //-----------
 
@@ -385,7 +389,7 @@ export class EsriClusterService {
     }
 
     private clear() {
-        console.log('Clear, clusters.length: ' + this._clusters.length);
+      //  console.log('Clear, clusters.length: ' + this._clusters.length);
 
         // Summary:    Remove all clusters and data points.
         //this.inherited(arguments);
@@ -395,7 +399,7 @@ export class EsriClusterService {
     }
 
     private getObjectIds (extent :any) {
-        console.log('getObjectIds, clusters.length: ' + this._clusters.length);
+      //  console.log('getObjectIds, clusters.length: ' + this._clusters.length);
 
         // debug
         // this._startGetOids = new Date().valueOf();
@@ -421,7 +425,7 @@ export class EsriClusterService {
     }
 
     private getRenderedSymbol (feature :any) {
-        console.log('getRenderedSymbol, clusters.length: ' + this._clusters.length);
+      //  console.log('getRenderedSymbol, clusters.length: ' + this._clusters.length);
         var attr = feature.attributes;
         if (attr.clusterCount === 1) {
             if (!this._useDefaultSymbol) {
@@ -441,7 +445,7 @@ export class EsriClusterService {
     }
 
     private add(p:any) {
-        console.log('add, clusters.length: ' + this._clusters.length);
+        //console.log('add, clusters.length: ' + this._clusters.length);
         // Summary:    The argument is a data point to be added to an existing cluster. If the data point falls within an existing cluster, it is added to that cluster and the cluster's label is updated. If the new point does not fall within an existing cluster, a new cluster is created.
         //
         // if passed a graphic, use the GraphicsLayer's add method
@@ -517,11 +521,11 @@ export class EsriClusterService {
     }
 
     private clusterCreate(feature, p) {
-        console.log('clusterCreate, clusters.length: ' + this._clusters.length);
-        console.log('Feature');
-        console.log(feature);
-        console.log('p');
-        console.log(p);
+        // console.log('clusterCreate, clusters.length: ' + this._clusters.length);
+        // console.log('Feature');
+        // console.log(feature);
+        // console.log('p');
+        // console.log(p);
         var clusterId = this._clusters.length + 1;
         // console.log('cluster create, id is: ', clusterId);
         // p.attributes might be undefined
@@ -549,9 +553,9 @@ export class EsriClusterService {
     }
 
     private updateClusterGeometry(c:any) {
-        console.log('updateClusterGeometry, clusters.length: ' + this._clusters.length);
-        console.log('c');
-        console.log(c);
+        // console.log('updateClusterGeometry, clusters.length: ' + this._clusters.length);
+        // console.log('c');
+        // console.log(c);
         // find the cluster graphic
 
         //TODO: is this._Clusters correct here?
@@ -577,7 +581,7 @@ export class EsriClusterService {
     // Build new cluster array from features and draw graphics
     public clusterGraphics() {
         debugger;
-        console.log('clusterGraphics, clusters.length: ' + this._clusters.length);
+      //  console.log('clusterGraphics, clusters.length: ' + this._clusters.length);
         // debug
         // var start = new Date().valueOf();
         // console.debug('#_clusterGraphics start');
@@ -638,7 +642,7 @@ export class EsriClusterService {
     // Add all graphics to layer and fire 'clusters-shown' event
     private showAllClusters() {
         debugger;
-        console.log('showAllClusters, clusters.length: ' + this._clusters.length);
+       // console.log('showAllClusters, clusters.length: ' + this._clusters.length);
         // debug
         // var start = new Date().valueOf();
         // console.debug('#_showAllClusters start');
@@ -656,13 +660,27 @@ export class EsriClusterService {
 
     //Add graphic and to layer
     private showCluster(c) {
-        console.log('showCluster, clusters.length: ' + this._clusters.length);
-        console.log('c');
-        console.log(c);
+        // console.log('showCluster, clusters.length: ' + this._clusters.length);
+        // console.log('c');
+        // console.log(c);
         //debugger;
         //var point = new this._esriPoint(c.x, c.y, this._sr);
         var point = new this._esriPoint(c.x, c.y); //need spatial reference?
 
+        let pointCount = c.attributes.clusterCount;
+        let clusterSize =10;
+
+        if (pointCount >= 100)
+            clusterSize= 70;
+        else if (pointCount >= 75)
+            clusterSize = 60;
+        else if (pointCount >= 50)
+            clusterSize= 50;
+         else if (pointCount >= 25)
+            clusterSize= 40;
+        else if (pointCount > 1)
+            clusterSize= 30;
+            
         var g = new this._graphic(point, null, c.attributes);
         //g.setSymbol(this.getRenderedSymbol(g));
         //g.symbol = this.getRenderedSymbol(g);
@@ -670,7 +688,8 @@ export class EsriClusterService {
          g.symbol = {
             type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
             color: '#ff771d',
-            size: "40px",  // pixels
+            //size: "40px",  // pixels
+            size: clusterSize + "px"
           };
 
 
@@ -679,16 +698,37 @@ export class EsriClusterService {
         this.cityLayer.graphics.add(g);
 
         // code below is used to not label clusters with a single point
-        if ( c.attributes.clusterCount < 2 ) {
-            return;
+       if ( pointCount < 2 ) {
+           return;
         }
 
         // show number of points in the cluster -- BACK IN FOR LABELS
         //TODO: back in
-        // var label = new this._textSymbol(c.attributes.clusterCount.toString())
+       //  var label = new this._textSymbol(c.attributes.clusterCount.toString())
         //     .setColor(new this._dojoColor(this._clusterLabelColor))
         //     .setOffset(0, this._clusterLabelOffset)
         //     .setFont(this._font);
+
+             var textSymbol = {
+                type: "text",  // autocasts as new TextSymbol()
+                color: "white",
+                haloColor: "black",
+                haloSize: "1px",
+                text: pointCount,
+                xoffset: 0,
+                yoffset: -3,
+                font: {  // autocast as new Font()
+                  size: 13,
+                  family: "sans-serif",
+                  weight: "bold"
+                }
+              };
+
+             this.cityLayer.graphics.add(new this._graphic(
+                    point,
+                    textSymbol,
+                    c.attributes
+                ));
         
             //this.add(
            // this.cityLayer.graphics.add(new this._graphic(
@@ -729,7 +769,7 @@ export class EsriClusterService {
     ///
     private reCluster () {
 
-        console.log('reCluster, clusters.length: ' + this._clusters.length);
+     //   console.log('reCluster, clusters.length: ' + this._clusters.length);
 
         debugger;
        
@@ -758,7 +798,7 @@ export class EsriClusterService {
 
 
     private getNormalizedExtentsPolygon() {
-        console.log('getNormalizedExtentsPolygon, clusters.length: ' + this._clusters.length);
+     //   console.log('getNormalizedExtentsPolygon, clusters.length: ' + this._clusters.length);
 
         // normalize map extent and deal with up to 2 Extent geom objects,
         // convert to Polygon geom objects,
