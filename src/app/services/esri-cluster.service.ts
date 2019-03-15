@@ -67,6 +67,10 @@ export class EsriClusterService {
 
   _font :any;
 
+  _watchUtils:any;;
+
+  _webMercatorUtils: any
+
  
   
   //------
@@ -147,10 +151,12 @@ export class EsriClusterService {
             'esri/symbols/SimpleMarkerSymbol',
             'dojo/_base/Color',
             'esri/symbols/Font',
+            'esri/core/watchUtils',
+            'esri/geometry/support/webMercatorUtils'
           ])
             .then(([EsriMap, EsriMapView,EsriGraphicsLayer, EsriGraphic, EsriSimpleLineSymbol, 
                 EsriFeatureLayer, geometryEngine,
-                EsriPoint, TextSymbol,Polygon,SimpleMarkerSymbol, dojoColor,Font
+                EsriPoint, TextSymbol,Polygon,SimpleMarkerSymbol, dojoColor,Font,watchUtils,webMercatorUtils
             ]) => {
 
         this._graphic = EsriGraphic;
@@ -167,6 +173,9 @@ export class EsriClusterService {
         this._simpleMarkerSymbol  = SimpleMarkerSymbol;
         this._dojoColor = dojoColor;
         this._font = Font;
+        this._watchUtils = watchUtils;
+
+        this._webMercatorUtils = webMercatorUtils;
 
         // Set type for Map constructor properties
         const mapProperties: esri.MapProperties = {
@@ -193,9 +202,41 @@ export class EsriClusterService {
           // All the resources in the MapView and the map have loaded. Now execute additional processes
           this.mapInitialisedSource.next();
 
+          let that = this;
+
+           //https://developers.arcgis.com/javascript/latest/sample-code/sandbox/index.html?sample=watch-for-changes
+           //extent change
+          watchUtils.whenTrue(this._mapView, "stationary", function() {
+
+            debugger;
+            that.reCluster();
+
+            
+            // Get the new center of the view only when view is stationary.
+            if (that._mapView.center) {
+              var info = "<br> <span> the view center changed. </span> x: " +
+              that._mapView.center.x.toFixed(2) + " y: " + that._mapView.center.y.toFixed(2);
+
+              console.log(info);
+                debugger;
+
+            }
+          
+            // Get the new extent of the view only when view is stationary.
+           
+          });
+
+
         }, err => {
           console.error(err);
         });
+
+        
+
+        //    this._mapView.on("click", function (event) {
+        //     debugger;
+        //    });
+           
 
 
         //--
@@ -215,6 +256,8 @@ export class EsriClusterService {
   public addCityDataAsGraphicsLayer(clientName: string)
   {
     let that = this;
+
+    console.log('Add city layer graphics');
 
     //-----------
 
@@ -257,7 +300,8 @@ export class EsriClusterService {
       });
 
       //debugger;
-      this.clusterGraphics();
+      //this.clusterGraphics();
+      this.reCluster();
 
       //TODO: is this needed?
     //this._map.add(this.cityLayer);
@@ -341,12 +385,18 @@ export class EsriClusterService {
     }
 
     private clear() {
+        console.log('Clear, clusters.length: ' + this._clusters.length);
+
         // Summary:    Remove all clusters and data points.
         //this.inherited(arguments);
         this._clusters.length = 0;
+
+       this.cityLayer.graphics.removeAll();
     }
 
     private getObjectIds (extent :any) {
+        console.log('getObjectIds, clusters.length: ' + this._clusters.length);
+
         // debug
         // this._startGetOids = new Date().valueOf();
         // console.debug('#_getObjectIds start');
@@ -371,6 +421,7 @@ export class EsriClusterService {
     }
 
     private getRenderedSymbol (feature :any) {
+        console.log('getRenderedSymbol, clusters.length: ' + this._clusters.length);
         var attr = feature.attributes;
         if (attr.clusterCount === 1) {
             if (!this._useDefaultSymbol) {
@@ -390,6 +441,7 @@ export class EsriClusterService {
     }
 
     private add(p:any) {
+        console.log('add, clusters.length: ' + this._clusters.length);
         // Summary:    The argument is a data point to be added to an existing cluster. If the data point falls within an existing cluster, it is added to that cluster and the cluster's label is updated. If the new point does not fall within an existing cluster, a new cluster is created.
         //
         // if passed a graphic, use the GraphicsLayer's add method
@@ -400,6 +452,8 @@ export class EsriClusterService {
 
         // add the new data to _clusterData so that it's included in clusters when the map level changes
         this._clusterData.push(p);
+        //this.cityLayer.graphics.add(g);
+
         var clustered = false;
         // look for an existing cluster for the new point
         for ( var i = 0; i < this._clusters.length; i++ ) {
@@ -424,6 +478,8 @@ export class EsriClusterService {
     }
 
     private clusterAddPoint(feature :any, p:any, cluster:any) {
+        //console.log('clusterAddPoint, clusters.length: ' + this._clusters.length);
+      //  debugger;
         // Average in the new point to the cluster geometry
         var count, x, y;
         count = cluster.attributes.clusterCount;
@@ -461,6 +517,11 @@ export class EsriClusterService {
     }
 
     private clusterCreate(feature, p) {
+        console.log('clusterCreate, clusters.length: ' + this._clusters.length);
+        console.log('Feature');
+        console.log(feature);
+        console.log('p');
+        console.log(p);
         var clusterId = this._clusters.length + 1;
         // console.log('cluster create, id is: ', clusterId);
         // p.attributes might be undefined
@@ -488,6 +549,9 @@ export class EsriClusterService {
     }
 
     private updateClusterGeometry(c:any) {
+        console.log('updateClusterGeometry, clusters.length: ' + this._clusters.length);
+        console.log('c');
+        console.log(c);
         // find the cluster graphic
 
         //TODO: is this._Clusters correct here?
@@ -512,13 +576,15 @@ export class EsriClusterService {
 
     // Build new cluster array from features and draw graphics
     public clusterGraphics() {
+        debugger;
+        console.log('clusterGraphics, clusters.length: ' + this._clusters.length);
         // debug
         // var start = new Date().valueOf();
         // console.debug('#_clusterGraphics start');
 
         // TODO - should test if this is a pan or zoom level change before reclustering
 
-        debugger;
+      //  debugger;
 
         // Remove all existing graphics from layer
         this.clear();
@@ -560,15 +626,19 @@ export class EsriClusterService {
             }
         }
 
+        this.showAllClusters();
+
         // debug
         // var end = new Date().valueOf();
         // console.debug('#_clusterGraphics end - ClusterData: ' + this._clusterData.length + ' Clusters: ' + this._clusters.length, (end - start)/1000);
 
-        this.showAllClusters();
+     
     }
 
     // Add all graphics to layer and fire 'clusters-shown' event
     private showAllClusters() {
+        debugger;
+        console.log('showAllClusters, clusters.length: ' + this._clusters.length);
         // debug
         // var start = new Date().valueOf();
         // console.debug('#_showAllClusters start');
@@ -586,12 +656,25 @@ export class EsriClusterService {
 
     //Add graphic and to layer
     private showCluster(c) {
+        console.log('showCluster, clusters.length: ' + this._clusters.length);
+        console.log('c');
+        console.log(c);
+        //debugger;
         //var point = new this._esriPoint(c.x, c.y, this._sr);
         var point = new this._esriPoint(c.x, c.y); //need spatial reference?
 
         var g = new this._graphic(point, null, c.attributes);
         //g.setSymbol(this.getRenderedSymbol(g));
-        g.symbol = this.getRenderedSymbol(g);
+        //g.symbol = this.getRenderedSymbol(g);
+        //works
+         g.symbol = {
+            type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
+            color: '#ff771d',
+            size: "40px",  // pixels
+          };
+
+
+          //----
         //this.add(g);
         this.cityLayer.graphics.add(g);
 
@@ -600,54 +683,83 @@ export class EsriClusterService {
             return;
         }
 
-        // show number of points in the cluster
-        var label = new this._textSymbol(c.attributes.clusterCount.toString())
-            .setColor(new this._dojoColor(this._clusterLabelColor))
-            .setOffset(0, this._clusterLabelOffset)
-            .setFont(this._font);
+        // show number of points in the cluster -- BACK IN FOR LABELS
+        //TODO: back in
+        // var label = new this._textSymbol(c.attributes.clusterCount.toString())
+        //     .setColor(new this._dojoColor(this._clusterLabelColor))
+        //     .setOffset(0, this._clusterLabelOffset)
+        //     .setFont(this._font);
         
             //this.add(
-            this.cityLayer.graphics.add(new this._graphic(
-                point,
-                label,
-                c.attributes
-            )
-        );
+           // this.cityLayer.graphics.add(new this._graphic(
+           //     point,
+           //    // label,
+           //     c.attributes
+           // )
+        //);
     }
 
     private clusterTest (p :any, cluster:any) {
+        // console.log('clusterTest, clusters.length: ' + this._clusters.length);
+        // console.log('p');
+        // console.log(p);
+        // console.log('cluster');
+        // console.log(cluster);
+       // debugger;
+
+        var result = this._webMercatorUtils.lngLatToXY(p.x,p.y);
+        var result1 = this._webMercatorUtils.lngLatToXY(cluster.x, cluster.y);
+
         var distance = (
             Math.sqrt(
-                Math.pow((cluster.x - p.x), 2) + Math.pow((cluster.y - p.y), 2)
+                Math.pow((result1[0] - result[0]), 2) + Math.pow((result1[1] - result[1]), 2)
         ) / this._clusterResolution
         );
+
+        // var distance = (
+        //     Math.sqrt(
+        //         Math.pow((cluster.x - p.x), 2) + Math.pow((cluster.y - p.y), 2)
+        // ) / this._clusterResolution
+        // );
         return (distance <= this._clusterTolerance);
     }
 
+    ///
+    ///TODO: this needs to be called on extent change
+    ///
     private reCluster () {
+
+        console.log('reCluster, clusters.length: ' + this._clusters.length);
+
+        debugger;
        
         //TODO: put this back in? cant find suspended
         //if (!this.suspended) {
             // update resolution
             this._clusterResolution = this._mapView.extent.width / this._mapView.width;
+
+            this.clusterGraphics();
+            //TODO: put all this back in ?
             // Smarter cluster, only query when we have to
             // Fist time
-            if (!this._visitedExtent) {
-                this.getObjectIds(this._mapView.extent);
-            // New extent
-            } else if (!this._visitedExtent.contains(this._mapView.extent)) {
-                this.getObjectIds(this._mapView.extent);
-            // Been there, but is this a pan or zoom level change?
-            } else {
-                this.clusterGraphics();
-            }
-            // update clustered extent
-            this._visitedExtent = this._visitedExtent ? this._visitedExtent.union(this._mapView.extent) : this._mapView.extent;
+            // if (!this._visitedExtent) {
+            //     this.getObjectIds(this._mapView.extent);
+            // // New extent
+            // } else if (!this._visitedExtent.contains(this._mapView.extent)) {
+            //     this.getObjectIds(this._mapView.extent);
+            // // Been there, but is this a pan or zoom level change?
+            // } else {
+            //     this.clusterGraphics();
+            // }
+            // // update clustered extent
+            // this._visitedExtent = this._visitedExtent ? this._visitedExtent.union(this._mapView.extent) : this._mapView.extent;
         //}
     }
 
 
     private getNormalizedExtentsPolygon() {
+        console.log('getNormalizedExtentsPolygon, clusters.length: ' + this._clusters.length);
+
         // normalize map extent and deal with up to 2 Extent geom objects,
         // convert to Polygon geom objects,
         // and combine into a master Polygon geom object to test against
