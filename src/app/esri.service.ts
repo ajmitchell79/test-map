@@ -115,6 +115,8 @@ export class EsriService {
 
         this._mapView = new EsriMapView(mapViewProperties);
 
+        
+
         this._mapView.ui.remove(["attribution"]);
 
         this._mapView.ui.add(new Legend({
@@ -221,6 +223,8 @@ export class EsriService {
 
   public intersects()
   {
+    
+
     let that = this;
     this.classBreaksLayer.graphics.removeAll();
 
@@ -642,6 +646,8 @@ export class EsriService {
       });
 
      // debugger;
+
+     
    
       this._sceneView.goTo(this.storm3dLayer.graphics).then(function () {
        
