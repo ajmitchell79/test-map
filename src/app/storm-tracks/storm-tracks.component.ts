@@ -13,7 +13,7 @@ import {stormdata} from '../data/storm-data';
 })
 export class StormTracksComponent implements OnInit {
 
-  @ViewChild('mapViewNode') private mapViewEl: ElementRef;
+  @ViewChild('mapViewNode', { static: true }) private mapViewEl: ElementRef;
 
   private mapInitialisedRef: Subscription = null;
   private twoDimension : boolean = false;

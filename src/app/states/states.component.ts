@@ -15,7 +15,7 @@ import {ICity} from '../models/iCity';
 })
 export class StatesComponent implements OnInit {
 
-  @ViewChild('mapViewNode') private mapViewEl: ElementRef;
+  @ViewChild('mapViewNode', { static: true }) private mapViewEl: ElementRef;
 
   private mapInitialisedRef: Subscription = null;
   selectedClient: string = "client_1";
